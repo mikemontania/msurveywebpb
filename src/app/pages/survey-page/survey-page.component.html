@@ -1,0 +1,22 @@
+<div class="toolbar" role="banner">
+  <a href="https://www.cavallaro.com.py">
+    <img width="150" alt="Logo" src="../../../../assets/images/grupocavallaro3.png" />
+  </a>
+  <div class="text-center">
+    <h1>{{ survey.title }}</h1>
+    <p>{{ survey.description }}</p>
+  </div>
+</div>
+<div class="card-body mt-5">
+  <form #surveyForm="ngForm" *ngIf="survey">
+    <div class="header">
+    </div>
+    <div class="container ">
+      <br>
+      <app-question-list [questions]="questions" (rangeValueChange)="onRangeValueChange($event)"
+        (quantityChange)="onQuantityChange($event)"></app-question-list>
+      <br>
+    </div>
+
+  </form>
+</div>

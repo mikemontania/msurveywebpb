@@ -1,0 +1,15 @@
+<div class="container" style="width: 100%;">
+
+
+        <span [style.margin-left.%]="marginValue" id="slider-label">{{ sliderValue }} </span>
+         <input type="range" class="form-range" [min]="minValue" [max]="maxValue" step="1" id="LoanTermSlider" name="LoanTermSlider" [(ngModel)]="sliderValue" (input)="onSliderChange()">
+         <div class="d-flex justify-content-between">
+            <span class="max-amount f-16 font-weight-normal darkGray-color text-right mt-1">
+                {{ minValue }}<!--  {{ unitText }} -->
+            </span>
+            <span class="max-amount f-16 font-weight-normal darkGray-color text-right mt-1">
+                {{ maxValue }} <!-- {{ unitText }}s -->
+            </span>
+        </div>
+
+</div>
