@@ -13,7 +13,6 @@ export class Question {
   amount: number;
   img?: string;
   codSurvey: number;
-  response?: SurveyResponse;
   Choices?: Choice[];
   createdAt?: Date;
   createdBy?: string;
