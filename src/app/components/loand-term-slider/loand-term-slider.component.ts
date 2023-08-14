@@ -5,12 +5,12 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
   templateUrl: './loand-term-slider.component.html',
   styleUrls: ['./loand-term-slider.component.css']
 })
-export class  LoandTermSliderComponent implements OnInit {
+export class LoandTermSliderComponent implements OnInit {
   @Input() initialValue: number;
   @Output() initialValueChange: EventEmitter<number> = new EventEmitter<number>();
   @Input() minValue: number;
   @Input() maxValue: number;
-  @Input() unitText: string = '';
+  @Input() obligatory: boolean;
   marginValue: number;
   sliderValue: number;
   unitDisplayText: string;
@@ -18,8 +18,7 @@ export class  LoandTermSliderComponent implements OnInit {
   constructor() {
     this.marginValue = 0;
     this.sliderValue = this.minValue || 1;
-    this.unitDisplayText = this.unitText ;
-  }
+   }
 
   ngOnInit(): void {
     if (this.initialValue) {
@@ -44,6 +43,5 @@ export class  LoandTermSliderComponent implements OnInit {
       }
     }
 
-    this.unitDisplayText = this.sliderValue < 10 ? this.unitText : this.unitText ;
-  }
+   }
 }

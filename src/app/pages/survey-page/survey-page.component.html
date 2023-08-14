@@ -3,70 +3,91 @@
     <img width="150" alt="Logo" src="../../../../assets/images/grupocavallaro3.png" />
   </a>
   <div class="text-center">
-    <h1>{{ survey.title }}</h1>
-    <p>{{ survey.description }}</p>
+    <h1>{{ survey?.title }}</h1>
+    <p>{{ survey?.description }}</p>
   </div>
 </div>
 <div class="card-body mt-5">
-  <form #surveyForm="ngForm" *ngIf="survey">
-    <div class="header">
+
+  <div class="d-flex justify-content-center align-items-center" *ngIf="mostrar; else surveyForm">
+    <div class="text-center">
+      <p class="display-4">Gracias por completar la encuesta.</p>
     </div>
-    <div class="container ">
-      <br>
-      <div *ngFor="let question of questions; let i = index">
-        <div class="col-9">
-          <div class="mb-3">
-            <label for="inputPregunta1" class="form-label">{{(i+1)}}.- {{ question.questionText }}</label>
-          </div>
-          <div class="mb-3">
-            <!-- Respuesta corta, de texto -->
-            <input type="text" class="form-control" id="INPUT" name="INPUT" *ngIf="question.questionType == 'INPUT'"
-              [(ngModel)]="responses[i].response">
-            <!-- Respuesta larga, de texto -->
-            <textarea class="form-control" id="TEXTAREA" name="TEXTAREA" rows="2"
-              *ngIf="question.questionType == 'TEXTAREA'" [(ngModel)]="responses[i].response"></textarea>
+  </div>
 
-            <!-- Rango -->
-            <app-loand-term-slider *ngIf="question.questionType == 'RANGE'" [initialValue]="responses[i].response"
-              [minValue]="1" [maxValue]="question.amount" [unitText]="'Item'"
-              (initialValueChange)="responses[i].response">
-            </app-loand-term-slider>
+  <ng-template #surveyForm>
 
-            <!-- Selección Múltiple, varias opciones -->
-            <!-- Respuestas para preguntas -->
-            <div
-              *ngIf="question.questionType == 'CHECKBOX' || question.questionType == 'RADIOBUTTON' && question.Choices">
-              <div *ngFor="let ans of question.Choices; let j = index">
-                <div class="form-check">
-                  <input class="form-check-input"
-                    type="{{ question.questionType == 'CHECKBOX' ? 'checkbox' : 'radio' }}"
-                    [name]="question.questionType+i+' '+j" [id]="question.questionType+i+' '+j"
-                    [value]="'opcion' + (j + 1)" [(ngModel)]="responses[j].response"> <!-- Corrección aquí -->
-                  <label class="form-check-label"
-                    [for]="question.questionType == 'CHECKBOX' ? 'checkbox' + question.codQuestion + j : 'radio' + question.codQuestion + j">
-                    {{ (j + 1) +'.- ' }}{{ ans.choiceText }}
+    <form #surveyForm="ngForm" *ngIf="survey">
+      <div class="header">
+      </div>
+      <div class="container ">
+        <br>
+        <div class="error-message" *ngIf="!surveyForm.valid && surveyForm.submitted">
+          Por favor, completa todas las preguntas obligatorias.
+        </div>
+        <div *ngFor="let question of questions; let i = index">
+          <div class="col-9">
+            <div class="mb-3">
+              <label for="inputPregunta1" class="form-label">{{(i+1)}}.- {{ question.questionText }}<span
+                  style="color:red;" *ngIf="question.obligatory">(*)</span></label>
+            </div>
+            <div class="mb-3">
+              <!-- Respuesta corta, de texto -->
+              <input type="text" class="form-control" id="INPUT" name="INPUT" *ngIf="question.questionType == 'INPUT'"
+                [(ngModel)]="responses[i].response">
+
+
+              <!-- Respuesta larga, de texto -->
+              <textarea class="form-control" id="TEXTAREA" name="TEXTAREA" rows="2"
+                *ngIf="question.questionType == 'TEXTAREA'" [(ngModel)]="responses[i].response"></textarea>
+
+              <!-- Rango -->
+
+              <app-loand-term-slider *ngIf="question.questionType == 'RANGE'" [initialValue]="1" [minValue]="1"
+                [maxValue]="question.amount" (initialValueChange)="onSliderValueChange($event, i)"
+                [obligatory]="question.obligatory">
+              </app-loand-term-slider>
+
+
+
+              <!-- Selección Múltiple, varias opciones -->
+              <div *ngIf="question.questionType === 'CHECKBOX'">
+                <div *ngFor="let ans of question.Choices; let h = index">
+                  <label>
+                    <input type="checkbox" [name]="'checkboxGroup'+i" class="form-check-input"
+                      [checked]="responses[i].selectedChoices.includes(ans.codChoice)"
+                      (change)="onCheckboxChange(i,ans.codChoice)">
+                    {{ ans.choiceText }}
                   </label>
                 </div>
               </div>
+
+              <!-- Selección Única, una opción -->
+              <div *ngIf="question.questionType == 'RADIOBUTTON' && question.Choices">
+                <div class="form-check" *ngFor="let ans of question.Choices; let j = index">
+                  <input class="form-check-input" type="radio" [name]="'radioGroup' + i"
+                    [id]="'radio' + question.codQuestion + j" [value]="ans.codChoice" [(ngModel)]="responses[i].response"
+                    [required]="question.obligatory">
+                  <label class="form-check-label" [for]="'radio' + question.codQuestion + j">
+                    {{ ans.choiceText }}
+                  </label>
+                </div>
+              </div>
+
+              <!-- Estrellas -->
+              <app-custom-rating *ngIf="question.questionType == 'STARS'" [(rating)]="responses[i].response"
+                [totalStars]="question.amount" (ratingChange)="onRatingChange()">
+              </app-custom-rating>
             </div>
-
-
-            <!-- Estrellas -->
-            <app-custom-rating *ngIf="question.questionType == 'STARS'" [(rating)]="quantity"
-              [totalStars]="question.amount"></app-custom-rating>
           </div>
         </div>
+        <br>
       </div>
-
-      <br>
-    </div>
-    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-      <button class="btn btn-success" type="button" role="button" (click)='submitSurvey()'
-        [disabled]="!surveyForm.form.valid">
-        <i class="fa fa-floppy-o"></i> Crear
-      </button>
-
-    </div>
-
-  </form>
+      <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-5">
+        <button class="btn btn-success" type="button" role="button"[disabled]="!surveyForm.valid" (click)="submitSurvey()">
+          <i class="fa fa-floppy-o"></i> Enviar
+        </button>
+      </div>
+    </form>
+  </ng-template>
 </div>

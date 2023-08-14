@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup,Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Choice } from 'src/app/models/choice.model';
 import { Question } from 'src/app/models/question.models';
@@ -29,20 +29,41 @@ export class SurveyPageComponent {
   quantity: number = 1;
   responses: SurveyResponse[] = []; // Almacena las respuestas aquí
   optionDescriptions: string[] = [];
-
+ mostrar:boolean =false;
   constructor(private route: ActivatedRoute,
-    private surveyService: SurveyService
-  ) { }
+    private surveyService: SurveyService,
+    private formBuilder: FormBuilder
+  ) {
+
+    this.surveyForm = this.formBuilder.group({
+      // ...
+      rangeValue: [null, Validators.required] // Use Validators.required to make the range value mandatory
+    });
+
+  }
 
   ngOnInit(): void {
-    console.log('ksdnjofkldsfldsjflkdsjfkdsjfdskfjdksfjdksfjdfsfkjdskf')
     this.route.params.subscribe(params => {
       const surveyId = +params['id']; // Convierte el parámetro a número
-      this.loadSurvey(surveyId);
+      const encuestaCompletada = localStorage.getItem(surveyId.toString());
+      if (encuestaCompletada) {
+        // El usuario ya completó la encuesta, puedes redirigirlo o mostrar un mensaje
+        // para evitar que complete la encuesta nuevamente.
+        this.mostrar = true
+      }else{
+        this.loadSurvey(surveyId);
+      }
     });
   }
 
   loadSurvey(surveyId) {
+    // Muestra el mensaje de carga
+    Swal.fire({
+      title: 'Espere por favor...',
+      allowOutsideClick: false,
+      icon: 'info',
+    });
+    Swal.showLoading();
     this.surveyService.getSurveyById(surveyId).subscribe(
       (content: any) => {
         console.log(content);
@@ -52,49 +73,63 @@ export class SurveyPageComponent {
           this.questions = this.survey.Questions;
 
           this.responses = this.questions.map((question) => {
-            if (question.questionType === 'CHECKBOX' || question.questionType === 'RADIOBUTTON') {
-              const questionResponses = question.Choices.map((choice) => ({
-                codSurveyResponse: null,
-                codUser: this.survey.codUser,
-                codSurvey: this.survey.codSurvey,
-                codQuestion: question.codQuestion,
-                codChoice: choice.codChoice,
-                response: '',
-                createdAt: null,
-                createdBy: '',
-                updatedAt: null,
-                updatedBy: ''
-              }));
-              return questionResponses; // Aplanar el arreglo de respuestas
-            } else {
-              return {
-                codSurveyResponse: null,
-                codUser: this.survey.codUser,
-                codSurvey: this.survey.codSurvey,
-                codQuestion: question.codQuestion,
-                codChoice:  question.Choices[0].codChoice,
-                response: '',
-                createdAt: null,
-                createdBy: '',
-                updatedAt: null,
-                updatedBy: ''
-              };
-            }
+            return {
+              codSurveyResponse: null,
+              codUser: this.survey.codUser,
+              codSurvey: this.survey.codSurvey,
+              codQuestion: question.codQuestion,
+              codChoice: question.Choices[0].codChoice,
+              type: question.questionType,
+              choiceId: question.questionType+question.codQuestion,
+              response: '',
+              selectedChoices:[],
+              createdAt: null,
+              createdBy: '',
+              updatedAt: null,
+              updatedBy: ''
+            };
           }).flat(); // Aplanar el arreglo de respuestas
         }
+        console.log(this.responses )
+        Swal.close();
       },
       error => {
         console.error('Error loading survey:', error);
+        Swal.close();
         // Puedes redirigir a la página de error aquí si es necesario
       }
     );
   }
 
-  submitSurvey() {
-    if (this.surveyForm.valid) {
-      const survey: Survey = this.surveyForm.value;
-      console.log(survey); // Aquí puedes enviar la encuesta al servidor o realizar las acciones necesarias
+  onSliderValueChange(newValue: number, index:number): void {
+    this.responses[index].response = newValue;
+  }
+
+  onCheckboxChange(index:number,optionId: number): void {
+    if (this.responses[index].selectedChoices.includes(optionId)) {
+      this.responses[index].selectedChoices = this.responses[index].selectedChoices.filter(id => id !== optionId);
+    } else {
+      this.responses[index].selectedChoices.push(optionId);
     }
+  }
+  onSliderFormSubmit() {
+    // Handle the form submission or other actions here
+  }
+  onRatingChange() {
+    // Handle the rating change or other actions here
+  }
+  submitSurvey() {
+    console.log(this.responses)
+    if (this.surveyForm.valid) {
+      console.log('valido')
+      // Proceed with submitting the form
+    } else {
+      // Display an error or handle the form's invalid state
+    }
+
+
+    localStorage.setItem(this.survey.codSurvey.toString(), 'true');
+
   }
 
 }
