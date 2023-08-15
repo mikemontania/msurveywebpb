@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup,Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Choice } from 'src/app/models/choice.model';
 import { Question } from 'src/app/models/question.models';
 import { SurveyResponse } from 'src/app/models/responseSurvey.model';
@@ -29,9 +29,10 @@ export class SurveyPageComponent {
   quantity: number = 1;
   responses: SurveyResponse[] = []; // Almacena las respuestas aquí
   optionDescriptions: string[] = [];
- mostrar:boolean =false;
+  mostrar: boolean = false;
   constructor(private route: ActivatedRoute,
     private surveyService: SurveyService,
+    private router: Router,
     private formBuilder: FormBuilder
   ) {
 
@@ -50,7 +51,7 @@ export class SurveyPageComponent {
         // El usuario ya completó la encuesta, puedes redirigirlo o mostrar un mensaje
         // para evitar que complete la encuesta nuevamente.
         this.mostrar = true
-      }else{
+      } else {
         this.loadSurvey(surveyId);
       }
     });
@@ -80,9 +81,9 @@ export class SurveyPageComponent {
               codQuestion: question.codQuestion,
               codChoice: question.Choices[0].codChoice,
               type: question.questionType,
-              choiceId: question.questionType+question.codQuestion,
+              choiceId: question.questionType + question.codQuestion,
               response: '',
-              selectedChoices:[],
+              selectedChoices: [],
               createdAt: null,
               createdBy: '',
               updatedAt: null,
@@ -90,7 +91,7 @@ export class SurveyPageComponent {
             };
           }).flat(); // Aplanar el arreglo de respuestas
         }
-        console.log(this.responses )
+        console.log(this.responses)
         Swal.close();
       },
       error => {
@@ -101,11 +102,11 @@ export class SurveyPageComponent {
     );
   }
 
-  onSliderValueChange(newValue: number, index:number): void {
+  onSliderValueChange(newValue: number, index: number): void {
     this.responses[index].response = newValue;
   }
 
-  onCheckboxChange(index:number,optionId: number): void {
+  onCheckboxChange(index: number, optionId: number): void {
     if (this.responses[index].selectedChoices.includes(optionId)) {
       this.responses[index].selectedChoices = this.responses[index].selectedChoices.filter(id => id !== optionId);
     } else {
@@ -118,18 +119,46 @@ export class SurveyPageComponent {
   onRatingChange() {
     // Handle the rating change or other actions here
   }
-  submitSurvey() {
-    console.log(this.responses)
+  async submitSurvey() {
+    console.log(this.responses);
+
+
+    this.responses = await this.transformResponses();
+
+  console.log(this.responses)
+
     if (this.surveyForm.valid) {
-      console.log('valido')
-      // Proceed with submitting the form
+      console.log('valido');
+      // Continuar con la presentación del formulario
     } else {
-      // Display an error or handle the form's invalid state
+      // Mostrar un error o manejar el estado inválido del formulario
     }
 
+    this.surveyService.send(this.responses)
+      .subscribe(
+        response => {
+          Swal.fire('Encuesta terminada', `Muchas gracias !!!.`, 'success');
+          this.router.navigate(['/survey/', this.survey.codSurvey]);
 
-    localStorage.setItem(this.survey.codSurvey.toString(), 'true');
-
+        }
+      );
+    // localStorage.setItem(this.survey.codSurvey.toString(), 'true');
   }
+
+  //crea duplica la cantidad responses de los checkbox corrigiendo su propiedad selectedChoices
+  transformResponses() {
+    return this.responses.flatMap(response => {
+      if (response.type === 'CHECKBOX') {
+        return response.selectedChoices.map(choiceId => ({
+          ...response,
+          selectedChoices: [],
+          response: choiceId,
+          codChoice:choiceId
+        }));
+      } 
+      return [response];
+    });
+  };
+
 
 }
