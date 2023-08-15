@@ -1,0 +1,50 @@
+/* Componente de caritas */
+.carita-gallery {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .carita-item {
+    border-radius: 50%;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  
+  .carita-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    transition: box-shadow 0.2s;
+  }
+  
+  .carita-item:hover,
+  .carita-item.selected {
+    transform: translateY(-15px);
+    box-shadow: 0 4px 28px rgba(0, 0, 0, 0.3); /* Aumenta la opacidad aquí */
+  }
+  
+  .carita-item.selected .carita-img {
+    box-shadow: 0 0 28px rgba(252, 252, 253, 0.7); /* Aumenta la opacidad aquí */
+  }
+  
+  .carita-item:hover .carita-img {
+    box-shadow: 0 0 28px rgba(252, 252, 253, 0.7); /* Aumenta la opacidad aquí */
+  }
+  
+  /* Componente de descripción */
+ 
+  .card-description {
+    display: none;  
+    padding: 0.5rem;
+    text-align: center;
+    background-color: #fff;
+    border-radius: 16px;  
+   }
+  .card-description.show {
+    display: block; /* Mostramos la descripción al seleccionar */
+    border-radius: 8px; /* Agregamos border-radius */
+  }
+  
