@@ -8,7 +8,6 @@ import { Survey } from 'src/app/models/survey.model';
 import { User } from 'src/app/models/user.model';
 import { SurveyService } from 'src/app/services/service.index';
 import Swal from 'sweetalert2';
-
 @Component({
   selector: 'app-survey-page',
   templateUrl: './survey-page.component.html',
@@ -36,6 +35,7 @@ export class SurveyPageComponent {
     private formBuilder: FormBuilder
   ) {
 
+
     this.surveyForm = this.formBuilder.group({
       // ...
       rangeValue: [null, Validators.required] // Use Validators.required to make the range value mandatory
@@ -43,7 +43,7 @@ export class SurveyPageComponent {
 
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.route.params.subscribe(params => {
       const surveyId = +params['id']; // Convierte el parámetro a número
       const encuestaCompletada = localStorage.getItem(surveyId.toString());
@@ -55,6 +55,7 @@ export class SurveyPageComponent {
         this.loadSurvey(surveyId);
       }
     });
+
   }
 
   loadSurvey(surveyId) {
@@ -82,6 +83,8 @@ export class SurveyPageComponent {
               codChoice: question.Choices[0].codChoice,
               type: question.questionType,
               choiceId: question.questionType + question.codQuestion,
+              obligatory: question.obligatory,
+              question: question.questionText,
               response: '',
               selectedChoices: [],
               createdAt: null,
@@ -119,13 +122,13 @@ export class SurveyPageComponent {
   onRatingChange() {
     // Handle the rating change or other actions here
   }
+
+
   async submitSurvey() {
     console.log(this.responses);
-
-
     this.responses = await this.transformResponses();
 
-  console.log(this.responses)
+    console.log(this.responses)
 
     if (this.surveyForm.valid) {
       console.log('valido');
@@ -133,16 +136,39 @@ export class SurveyPageComponent {
     } else {
       // Mostrar un error o manejar el estado inválido del formulario
     }
+    if (!this.validateObligatory()) {
+      return;
+    }
 
     this.surveyService.send(this.responses)
       .subscribe(
         response => {
           Swal.fire('Encuesta terminada', `Muchas gracias !!!.`, 'success');
           this.router.navigate(['/survey/', this.survey.codSurvey]);
-
         }
       );
+    //esto es para que no vuelva a cargarle la encuesta
     // localStorage.setItem(this.survey.codSurvey.toString(), 'true');
+  }
+
+
+
+  //Validar campos obligatorios
+  validateObligatory(): boolean {
+    for (const response of this.responses) {
+      console.log(response.response)
+      if (response.obligatory) {
+        if (response.response == null || response.response == '') {
+          Swal.fire({
+            icon: 'error',
+            title: 'Respuesta Obligatoria',
+            text: response.question,
+          });
+          return false; // Si se encuentra una respuesta vacía y obligatoria, retorna false.
+        }
+      }
+    }
+    return true; // Si no se encontraron respuestas vacías y obligatorias, retorna true.
   }
 
   //crea duplica la cantidad responses de los checkbox corrigiendo su propiedad selectedChoices
@@ -153,9 +179,9 @@ export class SurveyPageComponent {
           ...response,
           selectedChoices: [],
           response: choiceId,
-          codChoice:choiceId
+          codChoice: choiceId
         }));
-      } 
+      }
       return [response];
     });
   };

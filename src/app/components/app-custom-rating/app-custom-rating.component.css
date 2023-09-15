@@ -1,14 +1,14 @@
 span {
   display: inline-block;
   cursor: pointer;
-  line-height: 50px;
+  line-height: 70px;
   text-align: center;
-  width: 50px;
+  width: 70px;
 }
 
 .fa-star {
-  font-size: 24px; /* Tamaño de las estrellas */
-  margin: 0 5px; /* Espacio entre las estrellas */
+  font-size: 60px; /* Tamaño de las estrellas */
+  margin: 3 5px; /* Espacio entre las estrellas */
 }
 
 .active-star {

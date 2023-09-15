@@ -66,8 +66,8 @@
               <div *ngIf="question.questionType == 'RADIOBUTTON' && question.Choices">
                 <div class="form-check" *ngFor="let ans of question.Choices; let j = index">
                   <input class="form-check-input" type="radio" [name]="'radioGroup' + i"
-                    [id]="'radio' + question.codQuestion + j" [value]="ans.codChoice" [(ngModel)]="responses[i].response"
-                    [required]="question.obligatory">
+                    [id]="'radio' + question.codQuestion + j" [value]="ans.codChoice"
+                    [(ngModel)]="responses[i].response" [required]="question.obligatory">
                   <label class="form-check-label" [for]="'radio' + question.codQuestion + j">
                     {{ ans.choiceText }}
                   </label>
@@ -78,13 +78,32 @@
               <app-custom-rating *ngIf="question.questionType == 'STARS'" [(rating)]="responses[i].response"
                 [totalStars]="question.amount" (ratingChange)="onRatingChange()">
               </app-custom-rating>
+
+
+
+              <!-- caritas -->
+
+              <app-carita-button *ngIf="  question.questionType == 'CARITAS'" [caritas]="[
+      { name: 'Muy insatisfecho', image: 'assets/caritas/muytriste.png' },
+      { name: 'Insatisfecho', image: 'assets/caritas/triste.png' },
+      { name: 'No lo se', image: 'assets/caritas/sinemocion.png' },
+      { name: 'Satisfecho', image: 'assets/caritas/contento.png' },
+      { name: 'Muy Satisfecho', image: 'assets/caritas/muycontento.png' }
+    ]" (caritaSelected)="responses[i].response=$event"></app-carita-button>
+
+              <!-- Mapa -->
+
+              <app-map *ngIf="  question.questionType == 'MAPA'"
+                (locationSelected)="responses[i].response= 'lat:'+$event.lat+';lng:'+$event.lng"></app-map>
+
             </div>
           </div>
         </div>
         <br>
       </div>
       <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-5">
-        <button class="btn btn-success" type="button" role="button"[disabled]="!surveyForm.valid" (click)="submitSurvey()">
+        <button class="btn btn-success" type="button" role="button" [disabled]="!surveyForm.valid"
+          (click)="submitSurvey()">
           <i class="fa fa-floppy-o"></i> Enviar
         </button>
       </div>

@@ -10,8 +10,10 @@ export class SurveyResponse {
     codChoice: number;
     type: string;
     choiceId: string;
+    question: string;
     response: any; // Cambia 'any' por el tipo adecuado para tus respuestas
     selectedChoices:any[];
+    obligatory:boolean;
     createdAt: Date;
     createdBy: string;
     updatedAt: Date;
