@@ -6,6 +6,7 @@ import {
   HttpEvent
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { BASE_URL } from 'src/app/config/config';
 
 @Injectable()
 export class InterceptorService implements HttpInterceptor {
@@ -17,11 +18,15 @@ export class InterceptorService implements HttpInterceptor {
   ): Observable<HttpEvent<any>> {
 
 
-      request = request.clone({
-        setHeaders: {
-          Authorization: `Bearer  `
-        }
-      });
+      // Verificar si la URL de la solicitud contiene BASE_URL
+      if (request.url.includes(BASE_URL)) {
+        // Agregar la cabecera 'Authorization' solo a las solicitudes que contienen BASE_URL
+        request = request.clone({
+          setHeaders: {
+            Authorization: `Bearer <tu-token>`
+          }
+        });
+      }
 
     return next.handle(request);
   }

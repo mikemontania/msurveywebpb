@@ -1,6 +1,9 @@
+import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import axios from 'axios';
+import { catchError, throwError, tap, map } from 'rxjs';
 import { Choice } from 'src/app/models/choice.model';
 import { Question } from 'src/app/models/question.models';
 import { SurveyResponse } from 'src/app/models/responseSurvey.model';
@@ -8,12 +11,15 @@ import { Survey } from 'src/app/models/survey.model';
 import { User } from 'src/app/models/user.model';
 import { SurveyService } from 'src/app/services/service.index';
 import Swal from 'sweetalert2';
+import { v4 as uuidv4 } from 'uuid';
+
 @Component({
   selector: 'app-survey-page',
   templateUrl: './survey-page.component.html',
   styleUrls: ['./survey-page.component.css']
 })
 export class SurveyPageComponent {
+  ipAddress: any;
   survey: Survey;
   surveyForm: FormGroup;
   newQuestion: Question = new Question();
@@ -32,7 +38,8 @@ export class SurveyPageComponent {
   constructor(private route: ActivatedRoute,
     private surveyService: SurveyService,
     private router: Router,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private http: HttpClient
   ) {
 
 
@@ -44,6 +51,7 @@ export class SurveyPageComponent {
   }
 
   async ngOnInit(): Promise<void> {
+
     this.route.params.subscribe(params => {
       const surveyId = +params['id']; // Convierte el parámetro a número
       const encuestaCompletada = localStorage.getItem(surveyId.toString());
@@ -55,7 +63,21 @@ export class SurveyPageComponent {
         this.loadSurvey(surveyId);
       }
     });
-
+    this.getIP();
+  }
+  getIP() {
+    console.log(uuidv4())
+    axios
+      .get('https://api.ipify.org?format=json')
+      .then((response) => {
+        console.log(response)
+        this.ipAddress = response.data.ip;
+        console.log(this.ipAddress)
+      })
+      .catch((error) => {
+        this.ipAddress = uuidv4();
+        console.error('Error al obtener la dirección IP pública:', error);
+      });
   }
 
   loadSurvey(surveyId) {
@@ -85,6 +107,7 @@ export class SurveyPageComponent {
               choiceId: question.questionType + question.codQuestion,
               obligatory: question.obligatory,
               question: question.questionText,
+              client:this.ipAddress,
               response: '',
               selectedChoices: [],
               createdAt: null,

@@ -21,7 +21,6 @@ export class SurveyService {
       })
     );
   }
-
   getSurveyById(surveyId: number): Observable<any> {
     const url = `${BASE_URL}surveypb/${surveyId}`;
     return this.http.get<any>(url).pipe(
